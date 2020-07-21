@@ -98,7 +98,7 @@ class board {
 
     layer = 1;
     type = this.const.menuButtons;
-    vec = createVector( cellSize * 2, cellSize * 2 );
+    vec = createVector( cellSize * 13, cellSize * 4 );
     this.addButton( layer, name, type, vec.copy() );
 
 

@@ -76,13 +76,15 @@ class button {
 
       if ( this.type == 10 ){
         noStroke();
-        fill( 'red' );
-
+        fill( 'purple' );
         rect(
-          this.center.x - this.const.a / 2,
+          this.center.x - this.const.a * 0.75,
           this.center.y - this.const.a / 2,
-          this.const.a, this.const.a
+          this.const.a * 1.5 , this.const.a
         );
+        fill( 0 );
+        let txt = 'Next';
+        text( txt, this.center.x, this.center.y + fontOffset );
       }
     }
   }

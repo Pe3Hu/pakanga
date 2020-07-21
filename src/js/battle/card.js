@@ -209,9 +209,6 @@ class card {
         break;
       case 2:
         hue = 120;
-        coefficient = 1;
-        if( i == 1 )
-          coefficient = -1;
         break;
       case 3:
         hue = 0;
@@ -220,8 +217,12 @@ class card {
     fill( hue, saturation, lightness );
     stroke( hue, saturation, lightness );
 
-    for( let i = 0; i < vertex.length; i++ )
+    for( let i = 0; i < vertex.length; i++ ){
+      coefficient = 1;
+      if( i == 1 )
+        coefficient = -1;
       this.drawIcon( 0, id, vertex[i], d, coefficient );
+    }
   }
 
   draw( vec ){
