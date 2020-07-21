@@ -2,19 +2,16 @@
 class battleField{
   constructor(){
     this.const = {
-      a: cellSize,
+      a: cellSize ,
     };
     this.var = {
       cardIndex: {
-        cascade: 0,
+        deep: 0,
         flow: 0,
         channel: 0
       },
-      deckSize:{
-        cascade: 12
-      },
       current:{
-        cascade: null,
+        deep: null,
         flow: null,
         channel: null
       },
@@ -23,7 +20,7 @@ class battleField{
     this.array = {
       offset: [],
       vertex: [],
-      hand: [ 2, 4, 2 ],
+      hand: [ 2, 0, 0 ],
       card: [],
       index: []
     };
@@ -42,7 +39,7 @@ class battleField{
   initOffsets(){
     //indent for the grid
     let x = Math.floor( canvasGrid.x / 2 );
-    let y = Math.floor( canvasGrid.y / 2 );
+    let y = Math.floor( canvasGrid.y / 8 );
     let offset = createVector( this.const.a * x, this.const.a * y );
     this.array.offset.push( offset );
 
@@ -62,11 +59,12 @@ class battleField{
     this.array.card = [];
     this.array.index = [];
 
-    this.initCascades();
+    this.initDeeps();
   }
 
-  initCascades(){
+  initDeeps(){
     let type = 0;
+    let n = 3;
     this.array.card.push( [] );
     //card indices depending on the state
     //0 - card in the deck
@@ -75,18 +73,23 @@ class battleField{
     //3 - card went off
     this.array.index.push( [ [], [], [], [] ] );
 
-    for( let i = 0; i < this.var.deckSize.cascade; i++ ){
+    for( let i = 0; i < 3; i++ ){
       let data = {
-        index: this.var.cardIndex.cascade,
+        index: this.var.cardIndex.deep,
         a: this.const.a,
         type: type,
-        flowAmount: 6,
-        channelAmount: 3
+        flowAmount: 8 - i * 2,
+        channelAmount: 2 + i
       };
 
       this.array.card[type].push( new card( data ) );
-      this.array.index[type][0].push( this.var.cardIndex.cascade );
-      this.var.cardIndex.cascade++;
+      this.array.index[type][0].push( this.var.cardIndex.deep );
+      this.var.cardIndex.deep++;
+      if( i == 1 ){
+        this.array.card[type].push( new card( data ) );
+        this.array.index[type][0].push( this.var.cardIndex.deep );
+        this.var.cardIndex.deep++;
+      }
     }
 
     this.array.index[type][0] = this.shuffle( this.array.index[type][0] );
@@ -132,8 +135,8 @@ class battleField{
 
   initChannels(){
     let type = 2;
-    let objective;
-    let n = 4;
+    let purpose;
+    let n = 3;
     this.array.card.push( [] );
     //card indices depending on the state
     //0 - card in the deck
@@ -142,14 +145,34 @@ class battleField{
     //3 - card went off
     this.array.index.push( [ [], [], [], [] ] );
 
-    for( let objective = 0; objective < 3; objective++ ){
+    for( let purpose = 0; purpose < 4; purpose++ ){
 
       for( let i = 0; i < n; i++ ){
+        let number, obj;
+
+        switch ( purpose ) {
+          case 0:
+          case 1:
+            number = 0;
+            //obj only for case 0
+            obj = i;
+            break;
+          case 2:
+          case 3:
+            number = i;
+            if( i == 2 )
+              number = 0;
+            break;
+        }
+
+        let result = this.setEssence( purpose, number, obj );
         let data = {
           index: this.var.cardIndex.channel,
           a: this.const.a,
           type: type,
-          objective: objective
+          purpose: purpose,
+          essence: result.essence,
+          object: result.object
         };
 
         this.array.card[type].push( new card( data ) );
@@ -160,6 +183,116 @@ class battleField{
 
     this.array.index[type][0] = this.shuffle( this.array.index[type][0] );
     this.fillHand( type );
+  }
+
+  setEssence( purpose, number, obj ){
+    let essence, object = null;
+
+    switch ( purpose ) {
+      case 0:
+        switch ( number ) {
+          case 0:
+            essence = 'Track';
+            break;
+          case 1:
+            essence = 'Monitor';
+            break;
+          case 2:
+            essence = 'Notice';
+            break;
+          case 3:
+            essence = 'Foresee';
+            break;
+        }
+        break;
+      case 1:
+        switch ( number ) {
+          case 0:
+            essence = 'Inspire';
+            break;
+          case 1:
+            essence = 'Boost';
+            break;
+          case 2:
+            essence = 'Recovery';
+            break;
+          case 3:
+            essence = 'Overheat';
+            break;
+        }
+        break;
+      case 2:
+        switch ( number ) {
+          case 0:
+            essence = 'Dash';
+            break;
+          case 1:
+            essence = 'Stance';
+            break;
+          case 2:
+            essence = 'Race';
+            break;
+          case 3:
+            essence = 'Bias';
+            break;
+        }
+        break;
+      case 3:
+        switch ( number ) {
+          case 0:
+            essence = 'Harass';
+            break;
+          case 1:
+            essence = 'Liquidation';
+            break;
+          case 2:
+            essence = 'Feint';
+            break;
+          case 3:
+            essence = 'Ricochet';
+            break;
+        }
+        break;
+    }
+
+    if( purpose == 1 ){
+      object = {
+        id: obj,
+        name: null
+      }
+      switch ( number ) {
+        case 0:
+        case 1:
+          switch ( obj ) {
+            case 0:
+              object.name = 'View';
+              break;
+            case 1:
+              object.name = 'Shift';
+              break;
+            case 2:
+              object.name = 'Impact';
+              break;
+          }
+          break;
+        case 2:
+        case 3:
+          switch ( obj ) {
+            case 0:
+              object.name = 'Flow';
+              break;
+            case 1:
+              object.name = 'Channel';
+              break;
+          }
+          break;
+      }
+    }
+
+    return {
+      essence: essence,
+      object: object
+    }
   }
 
   fillHand( type ){
@@ -186,18 +319,10 @@ class battleField{
     }
 
     this.updateVertexs( type );
-    let sum = this.array.index[type][0].length + this.array.index[type][1].length +
-      this.array.index[type][2].length + this.array.index[type][3].length;
-    console.log( type, this.array.index[type][0].length, this.array.index[type][1].length,
-      this.array.index[type][2].length, this.array.index[type][3].length )
-  }
-
-  updateCards(){
-
   }
 
   updateVertexs( type ){
-    //0 - Cascade vertexs
+    //0 - deep vertexs
     //1 - Flow vertexs
     //2 - Channel vertexs
     this.array.vertex[type] = [ [], [] ];
@@ -238,14 +363,14 @@ class battleField{
   }
 
   nextRound(){
-    if( this.var.current.cascade != null ){
+    if( this.var.current.deep != null ){
       for( let type = 0; type < 3; type++ )
         for( let k = 1; k < 3; k++ )
           for( let i = this.array.index[type][k].length - 1; i >= 0 ; i-- )
             this.array.index[type][3].push( this.array.index[type][k].pop() );
 
       this.fillHand( 0 );
-      this.var.current.cascade = null;
+      this.var.current.deep = null;
     }
   }
 
@@ -253,10 +378,10 @@ class battleField{
     for( let type = 0; type < 3; type++ ){
       let flag = false;
 
-      if( this.var.current.cascade != null && type == 0 )
+      if( this.var.current.deep != null && type == 0 )
         flag = true;
 
-      if( this.var.current.cascade == null && type != 0 )
+      if( this.var.current.deep == null && type != 0 )
         flag = true;
 
       if( !flag ){
@@ -301,7 +426,9 @@ class battleField{
 
               switch ( type ) {
                 case 0:
-                  this.var.current.cascade = this.array.card[type][index];
+                  this.var.current.deep = this.array.card[type][index];
+                  this.array.hand[1] = this.var.current.deep.var.amount.flow;
+                  this.array.hand[2] = this.var.current.deep.var.amount.channel;
                   if( this.array.index.length == 1 ){
                     this.initFlows();
                     this.initChannels();
@@ -350,47 +477,46 @@ class battleField{
 }
 
   drawSum(){
-    if( this.var.current.cascade != null )
+    if( this.var.current.deep != null )
       if( this.array.index[1][2].length > 0 ){
         let txt = this.var.flowSum;
         fill( 'green' );
         text( txt,
           this.array.offset[1].x - this.const.a,
-          this.array.offset[1].y - this.const.a * 2.25 + fontSize / 3 );
+          this.array.offset[1].y - this.const.a * 2.25 + fontOffset );
         txt = Math.floor( Math.sqrt( this.var.flowSum ) );//integer
         fill( 'yellow' );
         text( txt,
           this.array.offset[1].x,
-          this.array.offset[1].y - this.const.a * 2.25 + fontSize / 3 );
+          this.array.offset[1].y - this.const.a * 2.25 + fontOffset );
         txt = this.var.flowSum - Math.pow( txt, 2 );//remainder
         fill( 'red' );
         text( txt,
           this.array.offset[1].x + this.const.a,
-          this.array.offset[1].y - this.const.a * 2.25 + fontSize / 3 );
+          this.array.offset[1].y - this.const.a * 2.25 + fontOffset );
       }
   }
 
   draw(){
-    this.updateCards();
     this.drawSum();
 
-    //i == 0 - Cascade; i == 1 - Flow;  i == 2 - Channel;
+    //i == 0 - Deep; i == 1 - Flow;  i == 2 - Channel;
     //j == 1 - awaiting; j == 2 - played;
     for( let i = 0; i < this.array.index.length; i++ )
       for( let j = 1; j < 3; j++ )
         for( let l = 0; l < this.array.index[i][j].length; l++ ){
           let index = this.array.index[i][j][l];
           let vertex = this.array.vertex[i][j-1][l];
-          let flag = this.var.current.cascade == null;
+          let flag = this.var.current.deep == null;
 
           if( !flag )
-            flag = i != 0 || this.var.current.cascade.const.index == index;
+            flag = i != 0 || this.var.current.deep.const.index == index;
 
           if( flag )
             this.array.card[i][index].draw( vertex );
         }
 
-    fill( 0 );
+    /*fill( 0 );
     rect(
       this.array.offset[0].x - this.const.a / 2,
       this.array.offset[0].y - this.const.a / 2,
@@ -407,7 +533,7 @@ class battleField{
       this.array.offset[2].x - this.const.a / 2,
       this.array.offset[2].y - this.const.a / 2,
       this.const.a, this.const.a
-    );
+    );*/
 
   }
 }

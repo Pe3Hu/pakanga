@@ -47,7 +47,7 @@ class board {
     let layer = 99;
     let name = 'layerMenu';
     let offset = createVector( cellSize * ( canvasGrid.x - 2.5 ), cellSize * 0.5 );
-    let size = createVector( cellSize * 2, cellSize * 21 );
+    let size = createVector( cellSize * 2, cellSize * 3 );
     this.addBorder( layer, name, offset, size );
 
     this.updateBorders();
