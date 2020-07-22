@@ -78,6 +78,10 @@ class card {
           id: data.purpose,
           name: null
         };
+        this.var.essence = {
+          name: data.essence,
+          object: data.object
+        };
         this.const.size = {
           x: this.const.a,
           y: 1.5 * this.const.a,
@@ -89,38 +93,23 @@ class card {
           lightness: colorMax * 0.5
         } );
         //pattern color
+        this.array.color.push( {
+          hue: 0,
+          saturation: 0,
+          lightness: colorMax
+        } );
         switch ( data.purpose ) {
           case 0:
             this.var.purpose.name = 'View';
-            this.array.color.push( {
-              hue: 0,
-              saturation: 0,
-              lightness: colorMax
-            } );
             break;
           case 1:
             this.var.purpose.name = 'Focus';
-            this.array.color.push( {
-              hue: 0,
-              saturation: 0,
-              lightness: colorMax
-            } );
             break;
           case 2:
             this.var.purpose.name = 'Shift';
-            this.array.color.push( {
-              hue: 0,
-              saturation: 0,
-              lightness: colorMax
-            } );
             break;
           case 3:
             this.var.purpose.name = 'Impact';
-            this.array.color.push( {
-              hue: 0,
-              saturation: 0,
-              lightness: colorMax
-            } );
             break;
         }
 
@@ -133,9 +122,12 @@ class card {
   //ocean
 
   drawIcon( type, subtype, vec, d, coefficient ){
-    let pointA, pointB, pointC;
+    let pointA, pointB, pointC, coefA, coefB;
+    let n, angle, x, y;
+    let style = false;
 
     switch ( type ) {
+      //purpose icons
       case 0:
         switch ( subtype ) {
           case 0:
@@ -178,6 +170,382 @@ class card {
           rect( pointA.x, pointA.y, d * 2, d * 2 );
           break;
         }
+        break;
+      //object icons
+      case 1:
+        stroke(colorMax);
+        strokeWeight( 2 );
+        switch ( subtype ) {
+          case 'Track':
+            noFill();
+            arc(vec.x, vec.y, d * 4.2, d * 4.2, PI, PI * 2 );
+            pointA = vec.copy();
+            pointA.y -= d * 0.6;
+            pointB = vec.copy();
+            pointB.y += d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            if( style ){
+              n = 8;
+              for( let i = 1; i < n; i++) {
+                angle = -PI * 2 / n * ( n - i );
+                y = ( angle / PI + 1 ) * d * 4;
+                x = Math.sin( angle )  * d * 2;
+                point( vec.x + x, vec.y + y );
+              }
+            }
+            break;
+          case 'Monitor':
+            noFill();
+            arc(vec.x, vec.y, d * 4.2, d * 4.2, 0, PI / 3);
+            arc(vec.x, vec.y, d * 4.2, d * 4.2, PI / 3 * 2, PI);
+            arc(vec.x, vec.y, d * 4.2, d * 4.2, PI / 3 * 4, PI / 3 * 5);
+            if( style ){
+              arc(vec.x, vec.y, d * 3, d * 3, PI / 3, PI / 3 * 2);
+              arc(vec.x, vec.y, d * 3, d * 3, PI, PI / 3 * 4);
+              arc(vec.x, vec.y, d * 3, d * 3, PI / 3 * 5, 0);
+              point( vec.x, vec.y );
+            }
+            break;
+          case 'Notice':
+            pointA = vec.copy();
+            pointA.y += d * 1.8;
+            pointA.x -= d * 0.9
+            pointB = vec.copy();
+            pointB.x -= d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointB = vec.copy();
+            pointB.x += d * 1.8;
+            pointB.y -= d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            if( style ){
+              pointA = vec.copy();
+              pointA.x += d * 1.75;
+              pointA.y += d * 1.25;
+              pointB = vec.copy();
+              pointB.y -= d * 1.6;
+              line( pointA.x, pointA.y, pointB.x, pointB.y );
+            }
+            break;
+          case 'Foresee':
+            for( let i = -1; i <= 1; i++)
+              for( let j = -1; j <= 1; j++)
+                if( Math.abs( j + i ) == 1 ){
+                  if( i == 0 ){
+                    coefB = createVector( 1, -j );
+                    coefA = createVector( -1, -j )
+                  }
+                  if( j == 0 ){
+                    coefB = createVector( -i, 1 );
+                    coefA = createVector( -i, -1 )
+                  }
+                  coefB.mult( 1 / Math.sqrt( 2 ) );
+                  coefA.mult( 1 / Math.sqrt( 2 ) );
+
+                  pointA = vec.copy();
+                  pointA.x += i * 2.4 * d;
+                  pointA.y += j * 2.4 * d;
+                  pointB = vec.copy();
+                  pointB.x += ( coefB.x + i * 2.4 ) * d;
+                  pointB.y += ( coefB.y + j * 2.4 ) * d;
+                  pointC = vec.copy();
+                  pointC.x += ( coefA.x + i * 2.4 ) * d;
+                  pointC.y += ( coefA.y + j * 2.4 ) * d;
+                  line( pointA.x, pointA.y, pointB.x, pointB.y );
+                  line( pointA.x, pointA.y, pointC.x, pointC.y );
+                }
+              if( style )
+                for( let i = -1; i <= 1; i++)
+                  for( let j = -1; j <= 1; j++)
+                    if( Math.abs( j + i ) == 1 ){
+                    if( i == 0 ){
+                      coefB = createVector( 1, -j );
+                      coefA = createVector( -1, -j )
+                    }
+                    if( j == 0 ){
+                      coefB = createVector( -i, 1 );
+                      coefA = createVector( -i, -1 )
+                    }
+                    coefB.mult( 1 / Math.sqrt( 2 ) );
+                    coefA.mult( 1 / Math.sqrt( 2 ) );
+
+                    pointA = vec.copy();
+                    pointA.x += i * d;
+                    pointA.y += j * d;
+                    pointB = vec.copy();
+                    pointB.x += ( coefB.x + i ) * d;
+                    pointB.y += ( coefB.y + j ) * d;
+                    pointC = vec.copy();
+                    pointC.x += ( coefA.x + i ) * d;
+                    pointC.y += ( coefA.y + j ) * d;
+                    line( pointA.x, pointA.y, pointB.x, pointB.y );
+                    line( pointA.x, pointA.y, pointC.x, pointC.y );
+                  }
+            break;
+          case 'Inspire':
+            pointA = vec.copy();
+            pointA.y -= d * 1.5;
+            pointB = vec.copy();
+            pointB.x += d * 1.8;
+            pointB.y += d * 1.2;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointB = vec.copy();
+            pointB.x -= d * 1.8;
+            pointB.y += d * 1.2;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            if( style ){
+              pointA = vec.copy();
+              pointA.x += d * 1.25;
+              pointA.y -= d * 1.75;
+              pointB = vec.copy();
+              pointB.x += d * 1.25;
+              pointB.y += d * 1.75;
+              line( pointA.x, pointA.y, pointB.x, pointB.y );
+              pointA = vec.copy();
+              pointA.x -= d * 1.25;
+              pointA.y -= d * 1.75;
+              pointB = vec.copy();
+              pointB.x -= d * 1.25;
+              pointB.y += d * 1.75;
+              line( pointA.x, pointA.y, pointB.x, pointB.y );
+            }
+            break;
+          case 'Boost':
+            pointA = vec.copy();
+            pointA.x += d * 1.5;
+            pointB = vec.copy();
+            pointB.x -= d * 1.2;
+            pointB.y += d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointB = vec.copy();
+            pointB.x -= d * 1.2;
+            pointB.y -= d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            if( style ){
+              pointA = vec.copy();
+              pointA.y += d * 1.25;
+              pointB = vec.copy();
+              pointB.x += d * 1.75;
+              pointB.y += d * 2.25;
+              line( pointA.x, pointA.y, pointB.x, pointB.y );
+              pointA = vec.copy();
+              pointA.y -= d * 1.25;
+              pointB = vec.copy();
+              pointB.x += d * 1.75;
+              pointB.y -= d * 2.25;
+              line( pointA.x, pointA.y, pointB.x, pointB.y );
+            }
+            break;
+          case 'Recovery':
+            pointA = vec.copy();
+            pointA.x += d * 1.8;
+            pointB = vec.copy();
+            pointB.x -= d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.y += d * 1.8;
+            pointB = vec.copy();
+            pointB.y -= d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            break;
+          case 'Overheat':
+            pointA = vec.copy();
+            pointA.y -= d * 1.8;
+            pointB = vec.copy();
+            pointB.x += d * 1.8;
+            pointB.y -= d * 0.3;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointB = vec.copy();
+            pointB.x -= d * 1.8;
+            pointB.y -= d * 0.3;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.y += d * 0.3;
+            pointB = vec.copy();
+            pointB.x += d * 1.8;
+            pointB.y += d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointB = vec.copy();
+            pointB.x -= d * 1.8;
+            pointB.y += d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            break;
+          case 'Dash':
+            pointA = vec.copy();
+            pointA.x -= d * 1.8;
+            pointB = vec.copy();
+            pointB.x += d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.x -= d * 1.8;
+            pointA.y -= d * 0.8;
+            pointB = vec.copy();
+            pointB.x -= d * 1.8;
+            pointB.y += d * 0.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.x += d * 1.8;
+            pointA.y -= d * 0.8;
+            pointB = vec.copy();
+            pointB.x += d * 1.8;
+            pointB.y += d * 0.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            break;
+          case 'Stance':
+            pointA = vec.copy();
+            pointA.x += d * 1.5;
+            pointA.y += d * 1.8;
+            pointB = vec.copy();
+            pointB.x -= d * 1.5;
+            pointB.y += d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.y += d * 1.8;
+            pointB = vec.copy();
+            pointB.y -= d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            if( style ){
+              pointA = vec.copy();
+              pointA.y -= d * 0.8;
+              pointB = vec.copy();
+              pointB.x -= d * 1.2;
+              pointB.y += d * 0.4;
+              line( pointA.x, pointA.y, pointB.x, pointB.y );
+              pointB = vec.copy();
+              pointB.x += d * 1.2;
+              pointB.y += d * 0.4;
+              line( pointA.x, pointA.y, pointB.x, pointB.y );
+            }
+            break;
+          case 'Meet':
+            pointA = vec.copy();
+            pointA.y -= d * 2.4;
+            pointB = vec.copy();
+            pointB.y -= d * 1.2;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.x += d * 1.2;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointB = vec.copy();
+            pointB.y += d * 1.2;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.y += d * 2.4;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            if( style ){
+              pointA = vec.copy();
+              pointA.y -= d * 0.8;
+              pointB = vec.copy();
+              pointB.x += d * 1.2;
+              pointB.y -= d * 2;
+              line( pointA.x, pointA.y, pointB.x, pointB.y );
+              pointB = vec.copy();
+              pointB.x -= d * 1.2;
+              pointB.y -= d * 2;
+              line( pointA.x, pointA.y, pointB.x, pointB.y );
+            }
+            break;
+          case 'Bias':
+            pointA = vec.copy();
+            pointA.x -= d * 0.6;
+            pointA.y -= d * 1.5;
+            pointB = vec.copy();
+            pointB.x -= d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.x += d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointB = vec.copy();
+            pointB.x += d * 0.6;
+            pointB.y += d * 1.5;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            break;
+          case 'Harass':
+            pointA = vec.copy();
+            pointA.x -= d * 1.8;
+            pointA.y -= d * 0.9;
+            pointB = vec.copy();
+            pointB.x += d * 1.8;
+            pointB.y -= d * 0.9;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.x -= d * 0.9;
+            pointA.y -= d * 0.9;
+            pointB = vec.copy();
+            pointB.x -= d * 0.9;
+            pointB.y -= d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.x -= d * 1.8;
+            pointA.y += d * 0.9;
+            pointB = vec.copy();
+            pointB.x += d * 1.8;
+            pointB.y += d * 0.9;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.x += d * 0.9;
+            pointA.y += d * 0.9;
+            pointB = vec.copy();
+            pointB.x += d * 0.9;
+            pointB.y += d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            break;
+          case 'Liquidation':
+            pointA = vec.copy();
+            pointA.x += d * 1.8;
+            pointA.y += d * 1.8;
+            pointB = vec.copy();
+            pointB.x -= d * 1.8;
+            pointB.y -= d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.x -= d * 1.8;
+            pointA.y += d * 1.8;
+            pointB = vec.copy();
+            pointB.x += d * 1.8;
+            pointB.y -= d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            break;
+          case 'Feint':
+            pointA = vec.copy();
+            pointA.x += d * 1.5;
+            pointA.y -= d * 1.5;
+            pointB = vec.copy();
+            pointB.x += d * 1.5;
+            pointB.y += d * 1.5;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.x += d * 1.5;
+            pointB = vec.copy();
+            pointB.x -= d * 0.5;
+            pointB.y += d * 1.5;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointB = vec.copy();
+            pointB.x -= d * 1.8;
+            pointB.y -= d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            break;
+          case 'Ricochet':
+            pointA = vec.copy();
+            pointA.y -= d * 1.8;
+            pointB = vec.copy();
+            pointB.x -= d * 1.2;
+            pointB.y -= d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointB = vec.copy();
+            pointB.y -= d * 0.6;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointA = vec.copy();
+            pointA.y += d * 1.8;
+            pointB = vec.copy();
+            pointB.x += d * 1.2;
+            pointB.y += d * 1.8;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            pointB = vec.copy();
+            pointB.y += d * 0.6;
+            line( pointA.x, pointA.y, pointB.x, pointB.y );
+            break;
+        }
+        strokeWeight( 1 );
         break;
     }
   }
@@ -223,6 +591,7 @@ class card {
         coefficient = -1;
       this.drawIcon( 0, id, vertex[i], d, coefficient );
     }
+    this.drawIcon( 1, this.var.essence.name, center, d, coefficient );
   }
 
   draw( vec ){

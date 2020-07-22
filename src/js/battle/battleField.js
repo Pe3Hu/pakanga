@@ -31,6 +31,7 @@ class battleField{
   init(){
     this.initOffsets();
     this.initCards();
+    this.click();
     /*console.log( 'index', this.array.index )
     console.log( 'card', this.array.card )
     console.log( 'vertex', this.array.vertex )*/
@@ -49,7 +50,7 @@ class battleField{
     this.array.offset.push( offset );
 
 
-    x = Math.floor( canvasGrid.x * 3 / 4 );
+    x = Math.floor( canvasGrid.x * 2 / 4 );//3/4
     y = Math.floor( canvasGrid.y / 4 );
     offset = createVector( this.const.a * x, this.const.a * y );
     this.array.offset.push( offset );
@@ -78,8 +79,8 @@ class battleField{
         index: this.var.cardIndex.deep,
         a: this.const.a,
         type: type,
-        flowAmount: 8 - i * 2,
-        channelAmount: 2 + i
+        flowAmount: 0,//8 - i * 2,
+        channelAmount: 16//2 + i
       };
 
       this.array.card[type].push( new card( data ) );
@@ -136,7 +137,7 @@ class battleField{
   initChannels(){
     let type = 2;
     let purpose;
-    let n = 3;
+    let n = 4;//3
     this.array.card.push( [] );
     //card indices depending on the state
     //0 - card in the deck
@@ -165,7 +166,7 @@ class battleField{
             break;
         }
 
-        let result = this.setEssence( purpose, number, obj );
+        let result = this.setEssence( purpose, i, obj );
         let data = {
           index: this.var.cardIndex.channel,
           a: this.const.a,
@@ -181,7 +182,7 @@ class battleField{
       }
     }
 
-    this.array.index[type][0] = this.shuffle( this.array.index[type][0] );
+    //this.array.index[type][0] = this.shuffle( this.array.index[type][0] );
     this.fillHand( type );
   }
 
@@ -230,7 +231,7 @@ class battleField{
             essence = 'Stance';
             break;
           case 2:
-            essence = 'Race';
+            essence = 'Meet';
             break;
           case 3:
             essence = 'Bias';
@@ -385,8 +386,8 @@ class battleField{
         flag = true;
 
       if( !flag ){
-        let x = mouseX;
-        let y = mouseY;
+        let x = 496; //mouseX;
+        let y = 94;// mouseY;
         let mouse = createVector( x, y );
         let size;
 
