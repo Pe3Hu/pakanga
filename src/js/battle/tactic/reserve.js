@@ -1,5 +1,5 @@
 //
-class card {
+class reserve {
   constructor ( data ){
     this.const = {
       index: data.index,
@@ -135,7 +135,7 @@ class card {
             break;
           case 1:
             strokeWeight( 2 );
-            stroke( hue, saturation, lightness );
+            //stroke( hue, saturation, lightness );
             pointA = vec.copy();
             pointA.x -= d;
             pointA.y -= d;
@@ -621,15 +621,10 @@ class card {
         break;
       case 1:
         fill( 0 );
-        //txt = this.const.index;
-        //text( txt, vec.x, vec.y - this.const.size.x / 4 + fontSize / 3 );
         txt = this.var.capacity;
         text( txt, vec.x, vec.y + this.const.size.x / 4 + fontOffset );
         break;
       case 2:
-        fill( 0 );
-        //txt = this.const.index;
-        //text( txt, vec.x, vec.y - this.const.size.x / 4 + fontSize / 3 );
         this.drawPurpose( this.var.purpose.id, vec );
         break;
     }
