@@ -2,23 +2,26 @@
 class hero{
   constructor( data ){
     this.const = {
-      a: cellSize ,
+      a: cellSize,
+      rightHander: data.rightHander
     };
     this.var = {
       reserveIndex: {
         deep: 0,
         flow: 0,
-        channel: 0
+        channel: 0,
+        deed: 0
       },
       current:{
         deep: null,
         flow: null,
         channel: null
       },
-      flowSum: 0
+      flowSum: 0,
+      pose: null
     }
     this.array = {
-      offset: [],
+      offset: data.offsets,
       vertex: [],
       hand: [ 2, 0, 0 ],
       reserve: [],
@@ -26,26 +29,17 @@ class hero{
       weapon: []
     };
 
-    this.init( data );
+    this.init();
   }
 
-  init( data ){
-    this.initOffsets( data );//villain hero
-    this.initreserves();
+  init(){
+    this.initReserves();
     this.initWeapons();
-    /*console.log( 'index', this.array.index )
-    console.log( 'reserve', this.array.reserve )
-    console.log( 'vertex', this.array.vertex )*/
+    this.initPose();
   }
 
-  initOffsets( data ){
-    this.array.offset.push( data.deepOffset.copy() );
-    this.array.offset.push( data.flowOffset.copy() );
-    this.array.offset.push( data.channelOffset.copy() );
-  }
-
-  initreserves(){
-    this.array.reserve = [ [], [], [] ];
+  initReserves(){
+    this.array.reserve = [ [], [], [], [] ];
     //index string matches the type
     //0 - deep
     //1 - flow
@@ -62,24 +56,60 @@ class hero{
     //2 - played on the table
     //3 - went off
 
+    this.array.index.push( [ [], [], [] ] )
+    //0 - basic actions
+    //1 - available actions
+    //2 - selected actions
+
     this.initDeeps();
   }
 
   initWeapons(){
-    let type = 3;
     this.array.weapon = [];
-    let weapon = 'left hand';
-    this.array.weapon.push( weapon );
-    weapon = 'right  hand';
-    this.array.weapon.push( weapon );
-    weapon = 'left leg';
-    this.array.weapon.push( weapon );
-    weapon = 'right leg';
-    this.array.weapon.push( weapon );
-    weapon = 'head';
-    this.array.weapon.push( weapon );
-    weapon = 'sword';
-    this.array.weapon.push( weapon );
+    let type = 4;
+    let archetype = 'limb';
+    let material = 'flesh';
+    let quality = 0;
+    let durability = {
+      current: 100,
+      min: 0,
+      max: 100
+    };
+    let grip = 0;
+    let subtypes = [
+      'right  hand',
+      'left  hand',
+      'right leg',
+      'left leg',
+      'head'
+    ];
+
+    for (var i = 0; i < subtypes.length; i++)
+      this.array.weapon.push( new weapon( {
+          index: i,
+          archetype: archetype,
+          subtype: subtypes[i],
+          material: material,
+          quality: quality,
+          durability: durability,
+          grip: grip
+        } ) );
+
+    let index = subtypes.length;
+    archetype = 'sword';
+    let subtype = 'single-edged'
+    material = 'steel';
+    quality = 1;
+
+    this.array.weapon.push( new weapon( {
+        index: index,
+        archetype: archetype,
+        subtype: subtype,
+        material: material,
+        quality: quality,
+        durability: durability,
+        grip: grip
+      } ) );
 
     this.array.index.push( [ [], [], [], [] ] )
     //0 - weapons in stock
@@ -94,6 +124,19 @@ class hero{
       this.array.index[type][0].push( this.array.weapon[i] );
 
     this.array.index[type][1].push( this.array.weapon[this.array.weapon.length - 1] );
+  }
+
+  initPose(){
+    let type = 4;
+    let data = {
+      a: this.const.a,
+      offset: this.array.offset[type],
+      owner: 'hero',
+      rightHander: this.const.rightHander,
+      grip: this.array.index[type][1][0].var.grip.id
+    }
+
+    this.var.pose = new pose( data );
   }
 
   initDeeps(){
@@ -130,7 +173,6 @@ class hero{
     let progression = 1;
     let n = 1;
 
-      console.log( 11 )
     for( let capacity = 4; capacity > 0; capacity-- ){
 
       for( let i = 0; i < n; i++ ){
@@ -197,6 +239,35 @@ class hero{
 
     //this.array.index[type][0] = this.shuffle( this.array.index[type][0] );
     this.fillHand( type );
+  }
+
+  initDeeds(){
+    let type = 3;
+
+    //horizon vertical stance shift
+    for( let h = -1; h <= 1; h++ )
+      for( let v = -1; v <= 1; v++ )
+        if( Math.abs( h ) + Math.abs( v ) == 1 ){
+          let data = {
+            index: this.var.reserveIndex.deed,
+            a: this.const.a,
+            type: type,
+            horizon: h,
+            vertical: v
+          };
+
+          this.array.reserve[type].push( new reserve( data ) );
+          this.array.index[type][0].push( this.var.reserveIndex.deed );
+          this.var.reserveIndex.deed++;
+        }
+
+
+      for( let i = 0; i < 4; i++ ){
+        let index = this.array.index[type][0].pop();
+        this.array.index[type][1].push( index );
+      }
+
+     this.updateVertexs( type );
   }
 
   setEssence( purpose, number, obj ){
@@ -339,6 +410,7 @@ class hero{
     //0 - deep vertexs
     //1 - Flow vertexs
     //2 - Channel vertexs
+    //3 - Deed vertexs
     this.array.vertex[type] = [ [], [] ];
     //vertex[type][0] - in processing
     //vertex[type][1] - selected
@@ -352,28 +424,37 @@ class hero{
         break;
       case 1:
       case 2:
+      case 3:
         x = this.const.a * 1.25;
         y = this.const.a;
         break;
     }
 
-    let vec = this.array.offset[type].copy();
-    vec.y += y;
-    vec.x -= ( this.array.index[type][1].length + 1 ) / 2 * x;
+    for( let n = 1; n < 3; n++ ){
+      let koef;
+      switch ( n ) {
+        case 1:
+          koef = 1;
+          break;
+        case 2:
+          koef = -1;
+          break;
+      }
 
-    for( let i = 0; i < this.array.index[type][1].length; i++ ){
-      vec.x += x;
-      this.array.vertex[type][0].push( vec.copy() );
+      let vec = this.array.offset[type].copy();
+      console.log( type, n, vec )
+      vec.y += koef * y;
+      vec.x -= ( this.array.index[type][n].length + 1 ) / 2 * x;
+      console.log( type, n, vec )
+
+
+      for( let i = 0; i < this.array.index[type][n].length; i++ ){
+        vec.x += x;
+        this.array.vertex[type][n - 1].push( vec.copy() );
+        console.log( type, n, vec )
+      }
     }
 
-    vec = this.array.offset[type].copy();
-    vec.y -= y;
-    vec.x -= ( this.array.index[type][2].length + 1 ) / 2 * x;
-
-    for( let i = 0; i < this.array.index[type][2].length; i++ ){
-      vec.x += x;
-      this.array.vertex[type][1].push( vec.copy() );
-    }
   }
 
   shuffle( array ) {
@@ -392,11 +473,11 @@ class hero{
   draw(){
     //i == 0 - Deep; i == 1 - Flow;  i == 2 - Channel;
     //j == 1 - awaiting; j == 2 - played;
-    for( let i = 0; i < 3; i++ )
+    for( let i = 0; i < 4; i++ )
       for( let j = 1; j < 3; j++ )
         for( let l = 0; l < this.array.index[i][j].length; l++ ){
           let index = this.array.index[i][j][l];
-          let vertex = this.array.vertex[i][j-1][l];
+          let vertex = this.array.vertex[i][j - 1][l];
           let flag = this.var.current.deep == null;
 
           if( !flag )
@@ -405,5 +486,8 @@ class hero{
           if( flag )
             this.array.reserve[i][index].draw( vertex );
         }
+
+
+    this.var.pose.draw();
   }
 }

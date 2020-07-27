@@ -2,7 +2,7 @@
 class markup{
   constructor( size ){
     this.const = {
-      offset: createVector( cellSize * 2, cellSize * 2 ),
+      offset: createVector( cellSize * 0.5, cellSize * 1 ),
       n: size * 2 + 1,
       m: size * 2 + 1,
       size: size,

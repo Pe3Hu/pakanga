@@ -8,13 +8,30 @@ class weapon {
       subtype: data.subtype,
       material: data.material,
       quality: data.quality,
-      durability: data.durability
+      durability: data.durability,
+      grip: {
+        id: null,
+        name: null
+      }
     }
     this.array = {
       technique: []
     }
 
+    this.setGrip( data );
     this.setTechnique();
+  }
+
+  setGrip( data ){
+    this.var.grip.id = data.grip;
+    switch ( data.grip ) {
+      case 0:
+        this.var.grip.name = 'with one hand';
+        break;
+      case 1:
+        this.var.grip.name  = 'with two hands';
+        break;
+    }
   }
 
   setTechnique(){

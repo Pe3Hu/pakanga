@@ -114,6 +114,25 @@ class reserve {
         }
 
         break;
+      case 3:
+        this.var.type.name = 'Deed';
+        this.const.size = {
+          x: this.const.a,
+          y: 1.5 * this.const.a,
+        };
+        //background color
+        this.array.color.push( {
+          hue: 180,
+          saturation: colorMax,
+          lightness: colorMax * 0.5
+        } );
+        //pattern color
+        this.array.color.push( {
+          hue: 0,
+          saturation: 0,
+          lightness: colorMax
+        } );
+        break;
     }
   }
 

@@ -32,31 +32,66 @@ class battleField {
   }
 
   initOffsets(){
-    //indent for the grid
+    //deep offset
     let x = Math.floor( canvasGrid.x / 2 );
     let y = Math.floor( canvasGrid.y / 8 );
     let offset = createVector( this.const.a * x, this.const.a * y );
     this.array.offset.push( offset );
 
+    //flow offset
     x = Math.floor( canvasGrid.x / 2 );
     y = Math.floor( canvasGrid.y / 2 );
     offset = createVector( this.const.a * x, this.const.a * y );
     this.array.offset.push( offset );
 
-
+    //channel offset
     x = Math.floor( canvasGrid.x / 2 );//3/4
     y = Math.floor( canvasGrid.y * 3 / 4 );/// 4
+    offset = createVector( this.const.a * x, this.const.a * y );
+    this.array.offset.push( offset );
+
+    //deed offset
+    x = Math.floor( canvasGrid.x * 0.25 );
+    y = Math.floor( canvasGrid.y / 8 );
+    offset = createVector( this.const.a * x, this.const.a * y );
+    this.array.offset.push( offset );
+
+    //first participant pose offset
+    x = Math.floor( canvasGrid.x * 0.65 );
+    y = Math.floor( canvasGrid.y / 8 );
+    offset = createVector( this.const.a * x, this.const.a * y );
+    this.array.offset.push( offset );
+
+    //second participant pose offset
+    x = Math.floor( canvasGrid.x * 0.85 );
+    y = Math.floor( canvasGrid.y / 8 );
     offset = createVector( this.const.a * x, this.const.a * y );
     this.array.offset.push( offset );
   }
 
   initParticipants(){
+    let offsets = [];
+    let n = 4;
+
+    for( let i = 0; i < n; i++ )
+       offsets.push( this.array.offset[i].copy() );
+
+    offsets.push( this.array.offset[4].copy() );
+
     let data = {
-      deepOffset: this.array.offset[0],
-      flowOffset: this.array.offset[1],
-      channelOffset: this.array.offset[2]
+      offsets: offsets,
+      rightHander: false
     }
+
     this.var.hero = new hero( data );
+
+    offsets = [ this.array.offset[5].copy() ];
+    data = {
+      offsets: offsets,
+      rightHander: true
+    }
+
+    this.var.villain = new villain( data );
   }
 
   setParticipant(){
@@ -86,7 +121,7 @@ class battleField {
 
     console.log( this.array.flow, this.array.channels );
 
-    let weapon = participant.array.index[3][1];
+    let weapon = participant.array.index[3][1][0];
 
     console.log( weapon );
     //for( let i = 0; i < channels.length; i++ )
@@ -99,7 +134,7 @@ class battleField {
   heroClick(){
     let participant = this.var.hero;
 
-    for( let type = 0; type < 3; type++ ){
+    for( let type = 0; type < 4; type++ ){
       let flag = false;
 
       if( participant.var.current.deep != null && type == 0 )
@@ -123,6 +158,7 @@ class battleField {
             break;
           case 1:
           case 2:
+          case 3:
             size = createVector( 0.5 * participant.const.a, 0.75 * participant.const.a );
             break;
         }
@@ -159,11 +195,13 @@ class battleField {
                   if( participant.array.index[0][1].length == 1 ){
                     participant.initFlows();
                     participant.initChannels();
+                    participant.initDeeds();
                     this.updateDeeds();
                   }
                   else{
                     participant.fillHand( 1 );
                     participant.fillHand( 2 );
+                    this.updateVertexs( 3 );
                     this.updateDeeds();
                   }
                   break;
@@ -232,6 +270,7 @@ class battleField {
   draw(){
     this.drawSum();
     this.var.hero.draw();
+    this.var.villain.draw();
     this.var.mark.draw();
   }
 }

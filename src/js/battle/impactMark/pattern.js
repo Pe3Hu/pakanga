@@ -39,8 +39,6 @@ class pattern {
       this.array.adjacency.push( index );
     }
 
-    console.log( this.array.adjacency )
-
     this.generate();
   }
 
