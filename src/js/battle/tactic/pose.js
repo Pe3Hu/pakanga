@@ -43,7 +43,7 @@ class pose {
 
       switch ( i ) {
         case 0:
-          position.name = 'Quarta';
+          position.name = 'Tertia';
           position.protected.push( {
             horizon: 1,
             vertical: 1
@@ -64,7 +64,7 @@ class pose {
           } );
           break;
         case 3:
-          position.name = 'Tertia';
+          position.name = 'Quarta';
           position.protected.push( {
             horizon: 1,
             vertical: 0
@@ -87,9 +87,9 @@ class pose {
     }
 
     if( this.const.rightHander )
-      this.var.currentPosition = 3;
-    else
       this.var.currentPosition = 0;
+    else
+      this.var.currentPosition = 3;
 
     this.updateVulnerability();
   }
@@ -98,6 +98,17 @@ class pose {
     let angle = -PI * 2 / n;
     let shift = n - 2;
     let scale = 4;
+    let koef;
+
+    //Mirror X-axis display of the opponent's stance
+    switch ( this.const.owner ) {
+      case 'hero':
+        koef = 1;
+        break;
+      case 'villain':
+        koef = -1;
+        break;
+    }
 
     for( let k = 0; k < 2; k++ ){
       this.array.vertex.push( [] );
@@ -107,7 +118,7 @@ class pose {
         let l = this.const.a * ( scale - k ) / scale;
         let x = Math.sin( angle * ( i + shift ) ) * l;
         let y = Math.cos( angle * ( i + shift ) ) * l;
-        let addVec = createVector( x, y );
+        let addVec = createVector( x * koef, y );
         vertex.add( addVec );
         this.array.vertex[k].push( vertex );
       }

@@ -32,10 +32,22 @@ class battleField {
   }
 
   initOffsets(){
-    //deep offset
-    let x = Math.floor( canvasGrid.x / 2 );
+    //first participant pose offset
+    let x = Math.floor( canvasGrid.x * 0.65 );
     let y = Math.floor( canvasGrid.y / 8 );
     let offset = createVector( this.const.a * x, this.const.a * y );
+    this.array.offset.push( offset );
+
+    //second participant pose offset
+    x = Math.floor( canvasGrid.x * 0.85 );
+    y = Math.floor( canvasGrid.y / 8 );
+    offset = createVector( this.const.a * x, this.const.a * y );
+    this.array.offset.push( offset );
+
+    //deep offset
+    x = Math.floor( canvasGrid.x / 2 );
+    y = Math.floor( canvasGrid.y / 8 );
+    offset = createVector( this.const.a * x, this.const.a * y );
     this.array.offset.push( offset );
 
     //flow offset
@@ -50,20 +62,8 @@ class battleField {
     offset = createVector( this.const.a * x, this.const.a * y );
     this.array.offset.push( offset );
 
-    //deed offset
+    //basic absorb offset
     x = Math.floor( canvasGrid.x * 0.25 );
-    y = Math.floor( canvasGrid.y / 8 );
-    offset = createVector( this.const.a * x, this.const.a * y );
-    this.array.offset.push( offset );
-
-    //first participant pose offset
-    x = Math.floor( canvasGrid.x * 0.65 );
-    y = Math.floor( canvasGrid.y / 8 );
-    offset = createVector( this.const.a * x, this.const.a * y );
-    this.array.offset.push( offset );
-
-    //second participant pose offset
-    x = Math.floor( canvasGrid.x * 0.85 );
     y = Math.floor( canvasGrid.y / 8 );
     offset = createVector( this.const.a * x, this.const.a * y );
     this.array.offset.push( offset );
@@ -71,21 +71,22 @@ class battleField {
 
   initParticipants(){
     let offsets = [];
-    let n = 4;
+    let min = 2;
+    let max = 6;
 
-    for( let i = 0; i < n; i++ )
+    offsets.push( this.array.offset[0].copy() );
+
+    for( let i = min; i < max; i++ )
        offsets.push( this.array.offset[i].copy() );
-
-    offsets.push( this.array.offset[4].copy() );
 
     let data = {
       offsets: offsets,
-      rightHander: false
+      rightHander: true
     }
 
     this.var.hero = new hero( data );
 
-    offsets = [ this.array.offset[5].copy() ];
+    offsets = [ this.array.offset[1].copy() ];
     data = {
       offsets: offsets,
       rightHander: true
@@ -106,24 +107,24 @@ class battleField {
 
   updateDeeds(){
     let participant = this.setParticipant();
+    let card = 1;
     this.array.flow = [];
-    this.array.channels = [];
+    this.array.channel = [];
+    this.array.deed = [];
 
-    for( let i = 0; i < participant.array.index[1][2].length; i++ ){
-      let index = participant.array.index[1][2][i];
+    for( let i = 0; i < participant.array.index[card][1][2].length; i++ ){
+      let index = participant.array.index[card][1][2][i];
       this.array.flow.push( participant.array.reserve[1][index] );
     }
 
-    for( let i = 0; i < participant.array.index[2][2].length; i++ ){
-      let index = participant.array.index[2][2][i];
-      this.array.channels.push( participant.array.reserve[2][index] );
+    for( let i = 0; i < participant.array.index[card][2][2].length; i++ ){
+      let index = participant.array.index[card][2][2][i];
+      this.array.channel.push( participant.array.reserve[2][index] );
     }
 
-    console.log( this.array.flow, this.array.channels );
-
-    let weapon = participant.array.index[3][1][0];
-
-    console.log( weapon );
+    //console.log( this.array.flow, this.array.channel, this.array.deed );
+    //let weapon = participant.array.index[card][3][1][0];
+    //console.log( weapon );
     //for( let i = 0; i < channels.length; i++ )
   }
 
@@ -133,101 +134,120 @@ class battleField {
 
   heroClick(){
     let participant = this.var.hero;
+    let max = 2;
+    if( participant.var.current.deep != null )
+      max = 3;
 
-    for( let type = 0; type < 4; type++ ){
-      let flag = false;
+    console.log( max )
+    for( let card = 1; card < max; card++ )
+      for( let type = 0; type < participant.array.index[card].length; type++ ){
+        let flag = false;
 
-      if( participant.var.current.deep != null && type == 0 )
-        flag = true;
+        if( participant.var.current.deep != null && type == 0 && card == 1 )
+          flag = true;
 
-      if( participant.var.current.deep == null && type != 0 )
-        flag = true;
+        if( participant.var.current.deep == null && type != 0 && card == 1 )
+          flag = true;
 
-      if( !flag ){
-        let x = mouseX;
-        let y = mouseY;
-        let mouse = createVector( x, y );
-        if( participant.var.current.deep == null )
-          mouse = createVector( 488, 96 );
+          console.log( card, type, flag )
+        if( !flag ){
+          let x = mouseX;
+          let y = mouseY;
+          let mouse = createVector( x, y );
+          if( participant.var.current.deep == null )
+            mouse = createVector( 488, 96 );
 
-        let size;
+          let size;
 
-        switch ( type ) {
-          case 0:
-            size = createVector( 0.75 * participant.const.a, 0.5 * participant.const.a );
-            break;
-          case 1:
-          case 2:
-          case 3:
-            size = createVector( 0.5 * participant.const.a, 0.75 * participant.const.a );
-            break;
-        }
-
-        //k_small == 1 - reserve awaiting player selection; k_big == 2 - reserve played on the table;
-        //k_small == 2 - reserve played on the table; k_big == 1 - reserve awaiting player selection;
-        for( let k_small = 1; k_small < 3; k_small++ ){
-          let k_big;
-          switch ( k_small ) {
-            case 1:
-              k_big = 2;
+          switch ( type ) {
+            case 0:
+              size = createVector( 0.75 * participant.const.a, 0.5 * participant.const.a );
               break;
+            case 1:
             case 2:
-              k_big = 1;
+            case 3:
+              size = createVector( 0.5 * participant.const.a, 0.75 * participant.const.a );
               break;
           }
-          for( let i = 0; i < participant.array.index[type][k_small].length; i++ ){
-            let index = participant.array.index[type][k_small][i];
-            let vertex = participant.array.vertex[type][k_small - 1][i];
-            let vec = mouse.copy();
-            vec.sub( vertex );
 
-            if( vec.x > -size.x && vec.x < size.x &&
-                vec.y > -size.y && vec.y < size.y ){
-              participant.array.index[type][k_small].splice( i, 1 );
-              participant.array.index[type][k_big].push( index );
-              participant.updateVertexs( type );
+          //k_small == 1 - card awaiting player selection; k_big == 2 - card played on the table;
+          //k_small == 2 - card played on the table; k_big == 1 - card awaiting player selection;
+          for( let k_small = 1; k_small < 3; k_small++ ){
+            let k_big;
+            switch ( k_small ) {
+              case 1:
+                k_big = 2;
+                break;
+              case 2:
+                k_big = 1;
+                break;
+            }
 
-              switch ( type ) {
-                case 0:
-                  participant.var.current.deep = participant.array.reserve[type][index];
-                  participant.array.hand[1] = participant.var.current.deep.var.amount.flow;
-                  participant.array.hand[2] = participant.var.current.deep.var.amount.channel;
-                  if( participant.array.index[0][1].length == 1 ){
-                    participant.initFlows();
-                    participant.initChannels();
-                    participant.initDeeds();
-                    this.updateDeeds();
-                  }
-                  else{
-                    participant.fillHand( 1 );
-                    participant.fillHand( 2 );
-                    this.updateVertexs( 3 );
-                    this.updateDeeds();
-                  }
-                  break;
-                case 1:
-                  participant.var.current.flow = participant.array.reserve[type][index];
-                  this.updateDeeds();
-                  switch ( k_small ) {
-                    case 1:
-                      this.var.flowSum += participant.array.reserve[type][index].var.capacity;
-                      break;
-                    case 2:
-                      this.var.flowSum -= participant.array.reserve[type][index].var.capacity;
-                      break;
-                  }
-                  break;
-                case 2:
-                  participant.var.current.channel = participant.array.reserve[type][index];
-                  this.updateDeeds();
-                  break;
+            for( let i = 0; i < participant.array.index[card][type][k_small].length; i++ ){
+              let index = participant.array.index[card][type][k_small][i];
+              //console.log( card, type, k_small,  participant.array.vertex[card] )
+              let vertex = participant.array.vertex[card][type][k_small - 1][i];
+              let vec = mouse.copy();
+              vec.sub( vertex );
+
+              if( vec.x > -size.x && vec.x < size.x &&
+                  vec.y > -size.y && vec.y < size.y ){
+                participant.array.index[card][type][k_small].splice( i, 1 );
+                participant.array.index[card][type][k_big].push( index );
+                participant.updateVertexs( card, type );
+
+                switch ( card ) {
+                  case 1:
+                    switch ( type ) {
+                      case 0:
+                        participant.var.current.deep = participant.array.reserve[type][index];
+                        participant.array.hand[1] = participant.var.current.deep.var.amount.flow;
+                        participant.array.hand[2] = participant.var.current.deep.var.amount.channel;
+                        if( participant.array.index[card][0][1].length == 1 ){
+                          participant.initFlows();
+                          participant.initChannels();
+                          participant.initDeeds();
+                          this.updateDeeds();
+                        }
+                        else{
+                          participant.fillHand( 1 );
+                          participant.fillHand( 2 );
+                          //participant.updateVertexs( 2, 0 );
+                          this.updateDeeds();
+                        }
+                        break;
+                      case 1:
+                        participant.var.current.flow = participant.array.reserve[type][index];
+                        this.updateDeeds();
+                        switch ( k_small ) {
+                          case 1:
+                            this.var.flowSum += participant.array.reserve[type][index].var.capacity;
+                            break;
+                          case 2:
+                            this.var.flowSum -= participant.array.reserve[type][index].var.capacity;
+                            break;
+                        }
+                        break;
+                      case 2:
+                        participant.var.current.channel = participant.array.reserve[type][index];
+                        this.updateDeeds();
+                        break;
+                      case 3:
+                        participant.var.current.deed = participant.array.reserve[type][index];
+                        this.updateDeeds();
+                        break;
+                    }
+                    break;
+                  case 2:
+                    participant.updateVertexs( card, type );
+                    break;
+                }                
+                return;
               }
-              return;
             }
           }
         }
       }
-    }
   }
 
   nextRound(){
@@ -236,8 +256,8 @@ class battleField {
     if( participant.var.current.deep != null ){
       for( let type = 0; type < 3; type++ )
         for( let k = 1; k < 3; k++ )
-          for( let i = participant.array.index[type][k].length - 1; i >= 0 ; i-- )
-            participant.array.index[type][3].push( participant.array.index[type][k].pop() );
+          for( let i = participant.array.index[card][type][k].length - 1; i >= 0 ; i-- )
+            participant.array.index[card][type][3].push( participant.array.index[card][type][k].pop() );
 
       participant.fillHand( 0 );
       participant.var.current.deep = null;

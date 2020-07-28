@@ -114,31 +114,10 @@ class reserve {
         }
 
         break;
-      case 3:
-        this.var.type.name = 'Deed';
-        this.const.size = {
-          x: this.const.a,
-          y: 1.5 * this.const.a,
-        };
-        //background color
-        this.array.color.push( {
-          hue: 180,
-          saturation: colorMax,
-          lightness: colorMax * 0.5
-        } );
-        //pattern color
-        this.array.color.push( {
-          hue: 0,
-          saturation: 0,
-          lightness: colorMax
-        } );
-        break;
     }
   }
 
-  //replenishment effort
-  //Deep flow channel
-  //ocean
+  //replenishment effort пополнение усилие
 
   drawIcon( type, subtype, vec, d, coefficient ){
     let pointA, pointB, pointC, coefA, coefB;
@@ -569,8 +548,9 @@ class reserve {
     }
   }
 
-  drawPurpose( id, center ){
+  drawPurpose( center ){
     let vertex = [];
+    let id = this.var.purpose.id;
     let d = this.const.a / 10;
     let a = this.const.a / 5;
     let vec = center.copy();
@@ -644,7 +624,7 @@ class reserve {
         text( txt, vec.x, vec.y + this.const.size.x / 4 + fontOffset );
         break;
       case 2:
-        this.drawPurpose( this.var.purpose.id, vec );
+        this.drawPurpose( vec );
         break;
     }
   }

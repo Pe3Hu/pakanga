@@ -10,7 +10,10 @@ class hero{
         deep: 0,
         flow: 0,
         channel: 0,
-        deed: 0
+      },
+      deedIndex: {
+        absorb: 0,
+        splash: 0
       },
       current:{
         deep: null,
@@ -22,9 +25,10 @@ class hero{
     }
     this.array = {
       offset: data.offsets,
-      vertex: [],
+      vertex: [ [], [], [] ],
       hand: [ 2, 0, 0 ],
       reserve: [],
+      absorb: [],
       index: [],
       weapon: []
     };
@@ -33,40 +37,16 @@ class hero{
   }
 
   init(){
-    this.initReserves();
     this.initWeapons();
+    this.initReserves();
     this.initPose();
   }
 
-  initReserves(){
-    this.array.reserve = [ [], [], [], [] ];
-    //index string matches the type
-    //0 - deep
-    //1 - flow
-    //2 - channel
-    //3 - weapon
-    this.array.index = [
-      [ [], [], [], [] ],
-      [ [], [], [], [] ],
-      [ [], [], [], [] ]
-    ];
-    //reserve indices depending on the state
-    //0 - in the deck
-    //1 - awaiting player selection
-    //2 - played on the table
-    //3 - went off
-
-    this.array.index.push( [ [], [], [] ] )
-    //0 - basic actions
-    //1 - available actions
-    //2 - selected actions
-
-    this.initDeeps();
-  }
 
   initWeapons(){
     this.array.weapon = [];
-    let type = 4;
+    let type = 0;
+    let card = 0;
     let archetype = 'limb';
     let material = 'flesh';
     let quality = 0;
@@ -111,35 +91,44 @@ class hero{
         grip: grip
       } ) );
 
-    this.array.index.push( [ [], [], [], [] ] )
+    this.array.index.push( [] );
+    this.array.index[card].push( [ [], [], [], [] ] )
     //0 - weapons in stock
     //1 - weapon in hand
     //2 - unarmed
     //3 - lost weapon
 
     for( let i = 0; i < 5; i++ )
-      this.array.index[type][2].push( this.array.weapon[i] );
+      this.array.index[card][type][2].push( this.array.weapon[i] );
 
     for( let i = 5; i < this.array.weapon.length - 1; i++ )
-      this.array.index[type][0].push( this.array.weapon[i] );
+      this.array.index[card][type][0].push( this.array.weapon[i] );
 
-    this.array.index[type][1].push( this.array.weapon[this.array.weapon.length - 1] );
+    this.array.index[card][type][1].push( this.array.weapon[this.array.weapon.length - 1] );
   }
 
-  initPose(){
-    let type = 4;
-    let data = {
-      a: this.const.a,
-      offset: this.array.offset[type],
-      owner: 'hero',
-      rightHander: this.const.rightHander,
-      grip: this.array.index[type][1][0].var.grip.id
-    }
+  initReserves(){
+    this.array.reserve = [ [], [], [] ];
+    //index string matches the type
+    //0 - deep
+    //1 - flow
+    //2 - channel
+    this.array.index.push( [
+      [ [], [], [], [] ],
+      [ [], [], [], [] ],
+      [ [], [], [], [] ]
+    ] );
+    //reserve indices depending on the state
+    //0 - in the deck
+    //1 - awaiting player selection
+    //2 - played on the table
+    //3 - went off
 
-    this.var.pose = new pose( data );
+    this.initDeeps();
   }
 
   initDeeps(){
+    let card = 1;
     let type = 0;
     let n = 3;
 
@@ -153,21 +142,22 @@ class hero{
       };
 
       this.array.reserve[type].push( new reserve( data ) );
-      this.array.index[type][0].push( this.var.reserveIndex.deep );
+      this.array.index[card][type][0].push( this.var.reserveIndex.deep );
       this.var.reserveIndex.deep++;
       if( i == 1 ){
         this.array.reserve[type].push( new reserve( data ) );
-        this.array.index[type][0].push( this.var.reserveIndex.deep );
+        this.array.index[card][type][0].push( this.var.reserveIndex.deep );
         this.var.reserveIndex.deep++;
       }
     }
 
-    this.array.index[type][0] = this.shuffle( this.array.index[type][0] );
+    this.array.index[card][type][0] = this.shuffle( this.array.index[card][type][0] );
 
     this.fillHand( type );
   }
 
   initFlows(){
+    let card = 1;
     let type = 1;
     let capacity;
     let progression = 1;
@@ -184,7 +174,7 @@ class hero{
         };
 
         this.array.reserve[type].push( new reserve( data ) );
-        this.array.index[type][0].push( this.var.reserveIndex.flow );
+        this.array.index[card][type][0].push( this.var.reserveIndex.flow );
         this.var.reserveIndex.flow++;
       }
 
@@ -192,11 +182,12 @@ class hero{
       n += progression;
     }
 
-    this.array.index[type][0] = this.shuffle( this.array.index[type][0] );
+    this.array.index[card][type][0] = this.shuffle( this.array.index[card][type][0] );
     this.fillHand( type );
   }
 
   initChannels(){
+    let card = 1;
     let type = 2;
     let purpose;
     let n = 4;//3
@@ -232,42 +223,104 @@ class hero{
         };
 
         this.array.reserve[type].push( new reserve( data ) );
-        this.array.index[type][0].push( this.var.reserveIndex.channel );
+        this.array.index[card][type][0].push( this.var.reserveIndex.channel );
         this.var.reserveIndex.channel++;
       }
     }
 
-    //this.array.index[type][0] = this.shuffle( this.array.index[type][0] );
+    //this.array.index[card][type][0] = this.shuffle( this.array.index[card][type][0] );
     this.fillHand( type );
   }
 
+  initPose(){
+    let card = 0;
+    let type = 0;
+    let offset = 0;
+    let data = {
+      a: this.const.a,
+      offset: this.array.offset[offset],
+      owner: 'hero',
+      rightHander: this.const.rightHander,
+      grip: this.array.index[card][type][1][0].var.grip.id
+    };
+
+    this.var.pose = new pose( data );
+  }
+
   initDeeds(){
-    let type = 3;
+    this.initRackChanges();
+  }
+
+  initRackChanges(){
+    let card = 2;
+    this.array.absorb = [];
+    this.array.absorb.push( [] );
+    let type = 0;
+
+    //0 - basic absorb
+    //1 - basic splash
+    this.array.index.push( [
+      [ [], [], [] ],
+      [ [], [], [] ]
+    ] );
+    //0 - inaccessible basic actions
+    //1 - available basic actions
+    //2 - selected basic actions
 
     //horizon vertical stance shift
     for( let h = -1; h <= 1; h++ )
       for( let v = -1; v <= 1; v++ )
         if( Math.abs( h ) + Math.abs( v ) == 1 ){
           let data = {
-            index: this.var.reserveIndex.deed,
+            index: this.var.deedIndex.absorb,
             a: this.const.a,
             type: type,
             horizon: h,
             vertical: v
           };
 
-          this.array.reserve[type].push( new reserve( data ) );
-          this.array.index[type][0].push( this.var.reserveIndex.deed );
-          this.var.reserveIndex.deed++;
+          this.array.absorb[type].push( new absorb( data ) );
+          this.array.index[card][type][0].push( this.var.deedIndex.absorb );
+          this.var.deedIndex.absorb++;
         }
 
+    let dist = 1;
+    this.provideChoiceOfRackChange( dist );
+  }
 
-      for( let i = 0; i < 4; i++ ){
-        let index = this.array.index[type][0].pop();
-        this.array.index[type][1].push( index );
-      }
+  provideChoiceOfRackChange( dist ){
+    let type = 0;
+    let card = 2;
+    let pose = this.var.pose;
+    let options =  pose.array.protected;
+    let choice = [];
+    let defense = pose.array.position[pose.var.currentPosition].protected;
+    //console.log( options, defense )
 
-     this.updateVertexs( type );
+    for( let i = 0; i < defense.length; i++ )
+      for( let h = 0; h < options.length; h++ )
+        for( let v = 0; v < options[h].length; v++ ){
+          let x = v - defense[i].vertical;
+          let y = h - defense[i].horizon;
+          let d = Math.abs( x ) + Math.abs( y );
+          if( d == dist && !options[h][v] )
+            choice.push({
+              vertical: x,
+              horizon: y
+            });
+        }
+
+    for( let i = 0; i < choice.length; i++ ){
+
+    }
+    //    console.log( choice )
+    for( let i = 0; i < 4; i++ ){
+      let index = this.array.index[card][type][0].pop();
+      this.array.index[card][type][1].push( index );
+    }
+    console.log( this.array.index[card][type] )
+
+   this.updateVertexs( card, type );
   }
 
   setEssence( purpose, number, obj ){
@@ -381,41 +434,57 @@ class hero{
   }
 
   fillHand( type ){
+    let card = 1;
     let l = this.array.hand[type];
-    if( this.array.index[type][0].length < this.array.hand[type] ){
-      l = this.array.index[type][0].length;
+    if( this.array.index[card][type][0].length < this.array.hand[type] ){
+      l = this.array.index[card][type][0].length;
 
       //up to play the remainder
       for( let i = 0; i < l; i++ ){
-        let index = this.array.index[type][0].pop();
-        this.array.index[type][1].push( index );
+        let index = this.array.index[card][type][0].pop();
+        this.array.index[card][type][1].push( index );
       }
 
-      for( let i = this.array.index[type][3].length - 1; i >= 0 ; i-- )
-        this.array.index[type][0].push( this.array.index[type][3].pop() );
+      for( let i = this.array.index[card][type][3].length - 1; i >= 0 ; i-- )
+        this.array.index[card][type][0].push( this.array.index[card][type][3].pop() );
 
       //take the missing number of reserves
       l = this.array.hand[type] - l;
     }
 
     for( let i = 0; i < l; i++ ){
-      let index = this.array.index[type][0].pop();
-      this.array.index[type][1].push( index );
+      let index = this.array.index[card][type][0].pop();
+      this.array.index[card][type][1].push( index );
     }
 
-    this.updateVertexs( type );
+    this.updateVertexs( card, type );
   }
 
-  updateVertexs( type ){
-    //0 - deep vertexs
-    //1 - Flow vertexs
-    //2 - Channel vertexs
-    //3 - Deed vertexs
-    this.array.vertex[type] = [ [], [] ];
+  updateVertexs( card, type ){
+    let x, y, offset;
+    //card == 0 - weapon
+    //type == 0 - equipped vertexs
+
+    //card == 1 - reserve
+    //type == 0 - deep vertexs
+    //type == 1 - Flow vertexs
+    //type == 2 - Channel vertexs
+
+    //card == 2 - deed
+    //type == 0 - basic absorb vertexs
+    //type == 1 - basic splash vertexs
+    this.array.vertex[card][type] = [ [], [] ];
     //vertex[type][0] - in processing
     //vertex[type][1] - selected
-    let x;
-    let y;
+
+    switch ( card ) {
+      case 1:
+        offset = type + 1;
+        break;
+      case 2:
+        offset = type + 4;
+        break;
+    }
 
     switch ( type ) {
       case 0:
@@ -424,7 +493,6 @@ class hero{
         break;
       case 1:
       case 2:
-      case 3:
         x = this.const.a * 1.25;
         y = this.const.a;
         break;
@@ -441,20 +509,15 @@ class hero{
           break;
       }
 
-      let vec = this.array.offset[type].copy();
-      console.log( type, n, vec )
+      let vec = this.array.offset[offset].copy();
       vec.y += koef * y;
-      vec.x -= ( this.array.index[type][n].length + 1 ) / 2 * x;
-      console.log( type, n, vec )
+      vec.x -= ( this.array.index[card][type][n].length + 1 ) / 2 * x;
 
-
-      for( let i = 0; i < this.array.index[type][n].length; i++ ){
+      for( let i = 0; i < this.array.index[card][type][n].length; i++ ){
         vec.x += x;
-        this.array.vertex[type][n - 1].push( vec.copy() );
-        console.log( type, n, vec )
+        this.array.vertex[card][type][n - 1].push( vec.copy() );
       }
     }
-
   }
 
   shuffle( array ) {
@@ -470,14 +533,16 @@ class hero{
     return array;
 }
 
-  draw(){
+  drawReserve(){
+    let card = 1;
     //i == 0 - Deep; i == 1 - Flow;  i == 2 - Channel;
     //j == 1 - awaiting; j == 2 - played;
-    for( let i = 0; i < 4; i++ )
+    for( let i = 0; i < 3; i++ )
       for( let j = 1; j < 3; j++ )
-        for( let l = 0; l < this.array.index[i][j].length; l++ ){
-          let index = this.array.index[i][j][l];
-          let vertex = this.array.vertex[i][j - 1][l];
+        for( let l = 0; l < this.array.index[card][i][j].length; l++ ){
+          let index = this.array.index[card][i][j][l];
+          //console.log( this.array.vertex[card] )
+          let vertex = this.array.vertex[card][i][j - 1][l];
           let flag = this.var.current.deep == null;
 
           if( !flag )
@@ -486,8 +551,26 @@ class hero{
           if( flag )
             this.array.reserve[i][index].draw( vertex );
         }
+  }
 
+  drawAbsorb(){
+    if( this.var.current.deep == null )
+      return;
 
+    let card = 2;
+    for( let i = 0; i < 1; i++ )
+      for( let j = 1; j < 3; j++ )
+        for( let l = 0; l < this.array.index[card][i][j].length; l++ ){
+          let index = this.array.index[card][i][j][l];
+          let vertex = this.array.vertex[card][i][j - 1][l];
+
+          this.array.absorb[i][index].draw( vertex );
+        }
+  }
+
+  draw(){
+    this.drawReserve();
+    this.drawAbsorb();
     this.var.pose.draw();
   }
 }
