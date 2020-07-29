@@ -138,7 +138,6 @@ class battleField {
     if( participant.var.current.deep != null )
       max = 3;
 
-    console.log( max )
     for( let card = 1; card < max; card++ )
       for( let type = 0; type < participant.array.index[card].length; type++ ){
         let flag = false;
@@ -149,7 +148,6 @@ class battleField {
         if( participant.var.current.deep == null && type != 0 && card == 1 )
           flag = true;
 
-          console.log( card, type, flag )
         if( !flag ){
           let x = mouseX;
           let y = mouseY;
@@ -239,9 +237,10 @@ class battleField {
                     }
                     break;
                   case 2:
+                    participant.updatePose( card, type );
                     participant.updateVertexs( card, type );
                     break;
-                }                
+                }
                 return;
               }
             }

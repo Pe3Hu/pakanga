@@ -14,7 +14,8 @@ class pose {
       vertex: [],
       color: [],
       position: [],
-      protected: []
+      protected: [],
+      grid: []
     }
 
     this.init( data );
@@ -33,58 +34,8 @@ class pose {
 
     this.initVertexs( n );
     this.initColors();
-
-    for (var i = 0; i < n; i++) {
-      let position = {
-        name: null,
-        id: i,
-        protected: []
-      };
-
-      switch ( i ) {
-        case 0:
-          position.name = 'Tertia';
-          position.protected.push( {
-            horizon: 1,
-            vertical: 1
-          } );
-          break;
-        case 1:
-          position.name = 'Prima';
-          position.protected.push( {
-            horizon: 2,
-            vertical: 1
-          } );
-          break;
-        case 2:
-          position.name = 'Secunda';
-          position.protected.push( {
-            horizon: 2,
-            vertical: 0
-          } );
-          break;
-        case 3:
-          position.name = 'Quarta';
-          position.protected.push( {
-            horizon: 1,
-            vertical: 0
-          } );
-          break;
-        case 4:
-          position.name = 'Quinta';
-          position.protected.push( {
-            horizon: 0,
-            vertical: 0
-          } );
-          position.protected.push( {
-            horizon: 0,
-            vertical: 1
-          } );
-          break;
-      }
-
-      this.array.position.push( position );
-    }
+    this.initGrid();
+    this.initPosition( n );
 
     if( this.const.rightHander )
       this.var.currentPosition = 0;
@@ -92,6 +43,17 @@ class pose {
       this.var.currentPosition = 3;
 
     this.updateVulnerability();
+  }
+
+  initGrid(){
+    let n = 3;//horizons
+    let m = 2;//verticals
+
+    for( let i = 0; i < n; i++ ){
+      this.array.grid.push( [] );
+      for( let j = 0; j < m; j++ )
+        this.array.grid[i].push( [] );
+    }
   }
 
   initVertexs( n ){
@@ -153,6 +115,90 @@ class pose {
     } );
   }
 
+  initPosition( n ){
+    for (var i = 0; i < n; i++) {
+      let position = {
+        name: null,
+        id: i,
+        protected: []
+      };
+      let first = null;
+      let second = null;
+
+      switch ( i ) {
+        case 0:
+          position.name = 'Tertia';
+          first = {
+            horizon: 1,
+            vertical: 1
+          };
+          if( n == 4 )
+            second = {
+              horizon: 0,
+              vertical: 1
+            };
+          break;
+        case 1:
+          position.name = 'Prima';
+          first = {
+            horizon: 2,
+            vertical: 1
+          };
+          if( n == 4 )
+            second = {
+              horizon: 1,
+              vertical: 1
+            };
+          break;
+        case 2:
+          position.name = 'Secunda';
+          first = {
+            horizon: 2,
+            vertical: 0
+          };
+          if( n == 4 )
+            second = {
+              horizon: 1,
+              vertical: 0
+            };
+          break;
+        case 3:
+          position.name = 'Quarta';
+          first = {
+            horizon: 1,
+            vertical: 0
+          };
+          if( n == 4 )
+            second = {
+              horizon: 0,
+              vertical: 0
+            };
+          break;
+        case 4:
+          position.name = 'Quinta';
+          first = {
+            horizon: 0,
+            vertical: 0
+          };
+          second = {
+            horizon: 0,
+            vertical: 1
+          };
+          break;
+      }
+
+      position.protected.push( first );
+      this.array.grid[first.horizon][first.vertical].push( i );
+
+      if( second != null ){
+        position.protected.push( second );
+        this.array.grid[second.horizon][second.vertical].push( i );
+      }
+
+      this.array.position.push( position );
+    }
+  }
+
   updateVulnerability(){
     this.array.protected = [];
     let n = 3;//horizons
@@ -171,6 +217,23 @@ class pose {
       let v = position[i].vertical;
       this.array.protected[h][v] = true;
     }
+  }
+
+  updatePosition( shift ){
+    let previous;
+
+    for( let i = 0; i < this.array.grid.length; i++ )
+      for( let j = 0; j < this.array.grid[i].length; j++ )
+        for( let l = 0; l < this.array.grid[i][j].length; l++ )
+          if( this.array.grid[i][j][l] == this.var.currentPosition )
+            previous = createVector( j, i );
+
+    let next = createVector( shift.vertical, shift.horizon );
+    next.add( previous );
+    console.log( previous, next )
+    this.var.currentPosition = this.array.grid[next.y][next.x][0];
+
+    this.updateVulnerability();
   }
 
   draw(){

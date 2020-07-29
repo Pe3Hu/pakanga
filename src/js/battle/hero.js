@@ -310,15 +310,16 @@ class hero{
             });
         }
 
-    for( let i = 0; i < choice.length; i++ ){
-
-    }
-    //    console.log( choice )
-    for( let i = 0; i < 4; i++ ){
-      let index = this.array.index[card][type][0].pop();
-      this.array.index[card][type][1].push( index );
-    }
-    console.log( this.array.index[card][type] )
+    for( let i = 0; i < choice.length; i++ )
+      for( let j = 0; j < this.array.absorb[type].length; j++ )
+        if( this.array.absorb[type][j].var.shift.vertical == choice[i].vertical &&
+            this.array.absorb[type][j].var.shift.horizon == choice[i].horizon
+         ){
+           let index = this.array.absorb[type][j].const.index;
+           let id = this.array.index[card][type][0].indexOf( index )
+           let result = this.array.index[card][type][0].splice( id, 1 );
+           this.array.index[card][type][1].push( result[0] );
+        }
 
    this.updateVertexs( card, type );
   }
@@ -518,6 +519,19 @@ class hero{
         this.array.vertex[card][type][n - 1].push( vec.copy() );
       }
     }
+  }
+
+  updatePose( card, type ){
+    let index = this.array.index[card][type][2][this.array.index[card][type][2].length - 1];
+    let pose = this.var.pose;
+
+    for( let j = this.array.index[card][type].length - 2; j >= 1; j-- )
+      this.array.index[card][type][0].push( this.array.index[card][type][j].pop() );
+
+    pose.updatePosition( this.array.absorb[type][index].var.shift  );
+
+    console.log( this.array.index[card][type], pose.array.protected )
+    this.provideChoiceOfRackChange( dist );
   }
 
   shuffle( array ) {
